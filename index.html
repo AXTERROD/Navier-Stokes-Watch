@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Blow-Up — Navier–Stokes, OpenAI, and the dispute over who solved it</title>
+<title>The Blow-Up — Navier–Stokes, a claimed solution, and a credit dispute</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
@@ -15,7 +15,7 @@
     --line-strong: rgba(232,239,244,0.18);
     --text: #e9eef2;
     --text-dim: #8d9aa9;
-    --text-faint: #5a6674;
+    --text-faint: #8290a0;
     --teal: #52d9c4;
     --heat: #ff7a4d;
     --heat-glow: rgba(255,122,77,0.35);
@@ -44,6 +44,7 @@
 
   a{ color: var(--teal); text-decoration-color: rgba(82,217,196,0.35); text-underline-offset: 3px; }
   a:hover{ text-decoration-color: var(--teal); }
+  a:focus-visible, button:focus-visible{ outline: 2px solid var(--teal); outline-offset: 3px; }
 
   .wrap{ max-width: 1080px; margin: 0 auto; padding: 0 28px; }
 
@@ -60,6 +61,9 @@
     gap: 16px;
   }
   .nav-title{ font-size: 15px; font-weight: 500; color: var(--text); display:flex; align-items:center; gap:9px; }
+  .nav-links{ display:flex; gap: 14px; flex-wrap:wrap; }
+  .nav-links a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  .nav-links a:hover, .nav-links a:focus-visible{ color:var(--teal); }
   .pulse{ width:7px; height:7px; border-radius:50%; background: var(--heat); box-shadow: 0 0 0 rgba(255,122,77,0.5); animation: pulse 2.4s ease-out infinite; flex-shrink:0; }
   @keyframes pulse{
     0%{ box-shadow: 0 0 0 0 rgba(255,122,77,0.55); }
@@ -68,6 +72,10 @@
   }
   .nav-updated{ font-size: 12px; color: var(--text-faint); }
   .nav-updated span{ color: var(--text-dim); }
+  .nav-updated time{ color: var(--text-dim); }
+  @media (max-width: 760px){ .nav-inner{ align-items:flex-start; flex-wrap:wrap; } .nav-links{ order:3; width:100%; } }
+  .skip-link{ position:absolute; left:12px; top:-50px; z-index:100; background:var(--teal); color:var(--ink); padding:8px 12px; border-radius:3px; font-weight:600; text-decoration:none; }
+  .skip-link:focus{ top:12px; }
 
   /* ---------- HERO ---------- */
   .hero{ position:relative; padding: 108px 0 76px; overflow:hidden; border-bottom: 1px solid var(--line); }
@@ -116,7 +124,7 @@
     position: relative; margin-top: 48px;
     background: radial-gradient(ellipse at 60% 30%, #0f1720 0%, #080b10 70%);
     border: 1px solid var(--line); border-radius: 6px;
-    height: 640px; overflow:hidden;
+    height: 640px; overflow:hidden; touch-action:none;
   }
   #vortex3d{ position:absolute; inset:0; width:100%; height:100%; cursor: grab; display:block; }
   #vortex3d:active{ cursor: grabbing; }
@@ -149,9 +157,13 @@
   .vortex-controls button:last-child{ border-bottom:none; font-size: 12px; }
   .vortex-controls button:hover{ background: rgba(255,255,255,0.06); color: var(--text); }
   .vortex-caption{ margin-top: 16px; font-size: 13px; color: var(--text-faint); line-height:1.6; max-width: 680px; }
+  .vortex-fallback{ position:absolute; inset:0; z-index:1; display:grid; place-items:center; margin:0; padding:40px; text-align:center; color:var(--text-dim); background:radial-gradient(ellipse at 60% 30%, #0f1720 0%, #080b10 70%); }
+  .vortex-stage.interactive .vortex-fallback{ display:none; }
+  @media (max-width: 600px){ .vortex-stage{ height:460px; } .vortex-label{ font-size:12px; } .vl-top{ right:22px; } .vl-mid{ left:22px; } .vortex-hint{ width:100%; justify-content:center; padding:0 52px 0 12px; } }
 
   /* ---------- TIMELINE ---------- */
   .timeline{ position: relative; margin-top: 56px; }
+  .timeline ol{ list-style:none; margin:0; padding:0; }
   .timeline-legend{ display:flex; gap: 22px; margin-top: 18px; flex-wrap: wrap; }
   .leg-item{ display:flex; align-items:center; gap:8px; font-size: 12.5px; color: var(--text-faint); }
   .leg-dot{ width:9px; height:9px; border-radius:50%; border: 2px solid; }
@@ -198,6 +210,8 @@
   .t-disputed-lbl{ font-family:'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--amber); display:block; margin-bottom: 5px; letter-spacing: 0.02em; }
   .t-mobile-date{ display:none; font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-faint); margin-bottom: 8px; }
   @media (max-width: 700px){ .t-mobile-date{ display:block; } }
+  .t-source{ margin-top:10px; font-size:12px; color:var(--text-faint); }
+  .t-source a{ color:var(--text-dim); }
 
   /* ---------- DISPUTE ---------- */
   .dispute-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-top: 48px; background: var(--line); border: 1px solid var(--line); }
@@ -239,6 +253,7 @@
   footer .f-left{ font-size: 13px; color: var(--text-faint); max-width: 460px; }
   footer .sources{ font-size: 13px; color: var(--text-faint); }
   footer .sources a{ display:block; margin-top: 6px; color: var(--text-dim); }
+  .source-note{ display:block; margin-top:14px; max-width:390px; font-size:12px; line-height:1.45; color:var(--text-faint); }
 
   @media (prefers-reduced-motion: reduce){
     *{ animation: none !important; transition: none !important; }
@@ -246,26 +261,34 @@
 </style>
 </head>
 <body>
-
+<a class="skip-link" href="#main">Skip to main content</a>
 <header class="nav">
   <div class="nav-inner">
     <div class="nav-title"><span class="pulse"></span> The Blow-Up</div>
-    <div class="nav-updated">Last updated <span class="mono" id="lastUpdated">September 9, 2026</span></div>
+    <nav class="nav-links" aria-label="Page sections">
+      <a href="#problem">The problem</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#dispute">Dispute</a>
+      <a href="#questions">Open questions</a>
+      <a href="#sources">Sources</a>
+    </nav>
+    <div class="nav-updated">Updated <time class="mono" id="lastUpdated" datetime="2026-09-09T09:00:00+05:30">Sep 9, 2026 · 9:00 AM IST</time></div>
   </div>
 </header>
 
+<main id="main">
 <section class="hero">
-  <canvas id="vortex2d"></canvas>
+  <canvas id="vortex2d" aria-hidden="true"></canvas>
   <div class="wrap hero-inner">
-    <div class="kicker">LIVE TRACKER · UPDATED AS THE STORY DEVELOPS</div>
-    <h1 class="hero-title">A fluid, a swarm of agents, and a fight over <em>who found the blow-up</em>.</h1>
-    <p class="hero-sub">On September 8, 2026, OpenAI said an internal AI system produced a proof for one of math's seven Millennium Prize Problems. Within hours, a rival mathematician's account of the week leading up to it turned the story into something messier. Here's what's been reported, in order — and what's still just one side's word against another's.</p>
-    <p class="hero-caveat">Nothing below is independently verified. The proof itself hasn't cleared peer review, and several claims about how it was produced are contested. Treat this as a record of who said what, not a verdict.</p>
+    <div class="kicker">RUNNING EXPLAINER · UPDATED AS THE STORY DEVELOPS</div>
+    <h1 class="hero-title">A fluid, a swarm of agents, and a dispute over <em>a claimed blow-up</em>.</h1>
+    <p class="hero-sub">On September 8, 2026, OpenAI announced a proposed solution to one of math's seven Millennium Prize Problems. Within hours, Tristan Buckmaster's account of the week leading up to it turned the story into something messier. This page records what each party has said, the public evidence, and what remains unresolved.</p>
+    <p class="hero-caveat">A Lean formalization is public, but independent mathematical review has not concluded. Claims about the research timeline and credit are contested; this is a sourced record, not a verdict.</p>
     <div class="hero-meta">
-      <div><span class="num">$1M</span><span class="lbl">Clay Institute prize, unclaimed pending verification</span></div>
+      <div><span class="num">$1M</span><span class="lbl">Clay prize: qualifying publication, two years, and general acceptance required</span></div>
       <div><span class="num">~10,000</span><span class="lbl">AI agents OpenAI says it deployed on Navier–Stokes</span></div>
       <div><span class="num">88 hrs</span><span class="lbl">Compute run OpenAI cites for the core result</span></div>
-      <div><span class="num">$22.5M</span><span class="lbl">Reported compute cost for the week-long push</span></div>
+      <div><span class="num">130B</span><span class="lbl">Output tokens OpenAI attributes to its Navier–Stokes effort</span></div>
     </div>
   </div>
 </section>
@@ -276,23 +299,24 @@
     <h2 class="section-title">What are the Navier–Stokes equations, and why is breaking them worth a million dollars?</h2>
     <div class="problem-intro">
       <p>The Navier–Stokes equations are the standard math used to describe how liquids and gases move — ocean currents, weather systems, blood flow, air over a wing. They've been trusted engineering tools for nearly two centuries.</p>
-      <p>What nobody had proven is whether the equations always behave. Start with a perfectly smooth, reasonable fluid, and in theory the solution should stay smooth forever. But no one could show that's guaranteed — or find a case where a fluid's speed shoots to infinity in a finite window of time, a <strong>singularity</strong>.</p>
+      <p>What nobody had proven is whether the equations always behave. Start with a perfectly smooth, reasonable fluid, and no one could show that the solution must stay smooth forever — or construct a mathematically allowed case in which a fluid's speed becomes unbounded in finite time, a <strong>singularity</strong>.</p>
       <p>That gap is the <strong>Navier–Stokes existence and smoothness problem</strong>, one of seven Millennium Prize Problems named by the Clay Mathematics Institute in 2000, each worth $1 million. Only one of the seven has ever been resolved, by Grigori Perelman in 2003.</p>
-      <p>OpenAI's claim is that its system found a case that does blow up: a fluid that starts smooth, spins into an ever-tighter, ever-faster vortex, and reaches unbounded speed at its core in finite time.</p>
+      <p>OpenAI's proposed result is a smoothly forced case that begins at rest, then forms an ever-tighter, ever-faster vortex and reaches unbounded speed at its core in finite time. It is a claim about the equations' mathematical model, not a prediction that real fluids move infinitely fast.</p>
     </div>
 
     <div class="vortex-stage">
-      <canvas id="vortex3d"></canvas>
+      <canvas id="vortex3d" role="img" aria-label="Interactive conceptual model of a vortex that spirals inward and stretches along its axis" aria-describedby="vortexInstructions vortexCaption"></canvas>
+      <p class="vortex-fallback">Conceptual schematic unavailable: the interactive model needs WebGL and the Three.js library. The explanation below describes the claimed mechanism.</p>
       <div class="vortex-label vl-top">axial stretching<div class="line" style="width:70px; top:10px; left:-84px; transform: rotate(24deg);"></div></div>
       <div class="vortex-label vl-mid">inward spiral<div class="line" style="width:60px; top:10px; left:-72px; transform: rotate(-18deg);"></div></div>
-      <div class="vortex-hint">drag to orbit · scroll or pinch to zoom</div>
+      <div class="vortex-hint" id="vortexInstructions">Drag to orbit · scroll or pinch to zoom · controls reset zoom</div>
       <div class="vortex-controls">
         <button id="vZoomIn" aria-label="Zoom in">+</button>
         <button id="vZoomOut" aria-label="Zoom out">–</button>
         <button id="vReset" aria-label="Reset view">⟲</button>
       </div>
     </div>
-    <p class="vortex-caption">A simplified model of the shape OpenAI's proof describes: the fluid stretches along its axis while spiraling inward, concentrating more and more speed into a shrinking core — the moving dots trace that inward, accelerating motion. This is illustrative of the general mechanism, not a rendering of the actual proof's data.</p>
+    <p class="vortex-caption" id="vortexCaption">A conceptual streamline field for the mechanism described in OpenAI's proposed proof: a wide belt of trajectories circulates inward, contracts toward a narrow core, and stretches along the vertical axis. Moving tracer lights show the intended flow direction. This is illustrative, not proof data or an independent simulation.</p>
   </div>
 </section>
 
@@ -300,7 +324,7 @@
   <div class="wrap">
     <div class="eyebrow">02 — HOW WE GOT HERE</div>
     <h2 class="section-title">The timeline</h2>
-    <p class="lede">Two threads of work — one private, one a sudden compute-heavy sprint — converged on the same territory within about three weeks.</p>
+    <p class="lede">The entries below separate primary claims from reported context. Dates without a time are date-level reporting, not a precise sequence of events.</p>
     <div class="timeline-legend">
       <div class="leg-item"><span class="leg-dot" style="border-color:var(--teal)"></span> Buckmaster &amp; Alpöge</div>
       <div class="leg-item"><span class="leg-dot" style="border-color:var(--heat)"></span> OpenAI</div>
@@ -309,7 +333,7 @@
 
     <div class="timeline" id="timelineWrap">
       <div class="timeline-spine"><div class="timeline-spine-fill" id="spineFill"></div></div>
-      <div id="timelineEntries"></div>
+      <ol id="timelineEntries" aria-label="Timeline of reported events"></ol>
     </div>
   </div>
 </section>
@@ -357,32 +381,41 @@
     <div class="eyebrow">04 — WHAT'S STILL OPEN</div>
     <h2 class="section-title">Unresolved, as of the last update</h2>
     <div class="questions">
-      <div class="q-item"><div class="q-num">01</div><p><strong>Is the proof actually correct?</strong> A 166-page manuscript and Lean formalization are public, but independent verification by the mathematical community hasn't concluded.</p></div>
+      <div class="q-item"><div class="q-num">01</div><p><strong>Is the proposed proof correct?</strong> A 166-page manuscript and Lean formalization are public, but independent verification by the mathematical community hasn't concluded.</p></div>
       <div class="q-item"><div class="q-num">02</div><p><strong>Did rumor or research drive OpenAI's timeline?</strong> Reports disagree on whether OpenAI's push began around August 28 or September 1 — both sides agree it followed rumors, not a leak of specific content.</p></div>
       <div class="q-item"><div class="q-num">03</div><p><strong>What exactly was said on the September 6 calls?</strong> The authorship-pressure and "ruin your career" claims rest on Buckmaster's account; OpenAI disputes the framing but hasn't offered a full transcript.</p></div>
       <div class="q-item"><div class="q-num">04</div><p><strong>What does this mean for mathematicians using commercial AI tools on unpublished work?</strong> Tao's broader worry — that this discourages sharing early ideas — is the part of the story likely to outlast this specific dispute.</p></div>
-      <div class="q-item"><div class="q-num">05</div><p><strong>Who, if anyone, gets Clay Institute credit?</strong> The Institute's process for AI-assisted or disputed-origin proofs has never been publicly tested before.</p></div>
+      <div class="q-item"><div class="q-num">05</div><p><strong>Who, if anyone, could receive a Clay prize?</strong> Clay requires a qualifying publication, a two-year wait, and general acceptance before it considers a proposed solution; OpenAI says it does not intend to claim the prize.</p></div>
+      <div class="q-item"><div class="q-num">06</div><p><strong>What exactly has Lean verified?</strong> A Lean checker can verify the supplied formalization. Mathematicians still need to assess the theorem statement, modeling assumptions, translation into Lean, and the result's significance.</p></div>
     </div>
 
     <div class="update-note">
-      <strong>This page is meant to be kept current.</strong> The timeline is stored as a small data array in the page's own code — new developments can be added as new entries without touching the design.
-        <li class="mono">Sep 9 — Rebuilt the 3D vortex model with a real orbit camera (drag + scroll/pinch to zoom), floor grid and fog for depth, and moving particles that trace the inward/accelerating flow.</li>
-        <li class="mono">Sep 9 — Added Sept 6 call details, Bubeck's rebuttal, Altman's statement, Tao's separate praise for the Euler result, and compute-cost figures. Corrected the OpenAI start-date discrepancy (Aug 28 vs. Sept 1, both reported).</li>
+      <strong>This page is designed to be kept current.</strong> Add every update to the structured timeline data with an ISO date, an actor/category, and one or more direct sources. Update the timestamp above only after checking each new claim against its linked source; avoid adding unsourced social-media summaries as facts.
+      <ul class="changelog">
+        <li class="mono">Sep 9 — Added source-aware timeline entries, neutral claim wording, Clay-prize criteria, an explicit Lean-verification question, and source-maintenance guidance.</li>
+        <li class="mono">Sep 9 — Replaced the sparse vortex sculpture with a layered, animated streamline field that shows inward circulation, core contraction, and axial stretching.</li>
       </ul>
     </div>
   </div>
 </section>
 
+</main>
+
 <footer>
   <div class="wrap">
     <div class="f-left">Built as a running explainer, not a verdict. Quoted lines are kept short and attributed; longer claims from either side are paraphrased. Where sources conflict, both versions are noted rather than one being picked as fact.</div>
-    <div class="sources">
+    <div class="sources" id="sources">
       SOURCES
       <a href="https://openai.com/index/navier-stokes-solution/" target="_blank" rel="noopener">OpenAI — announcement</a>
+      <a href="https://cims.nyu.edu/~tristanb/statement.pdf" target="_blank" rel="noopener">Tristan Buckmaster — public statement</a>
+      <a href="https://x.com/SebastienBubeck" target="_blank" rel="noopener">Sébastien Bubeck — public response</a>
+      <a href="https://mathstodon.xyz/@tao/117233528517340774" target="_blank" rel="noopener">Terence Tao — public commentary</a>
+      <a href="https://www.claymath.org/millennium-problems/rules/" target="_blank" rel="noopener">Clay Mathematics Institute — prize rules</a>
       <a href="https://www.nature.com/articles/d41586-026-02842-5" target="_blank" rel="noopener">Nature — coverage</a>
       <a href="https://www.scientificamerican.com/article/openai-claims-blockbuster-math-breakthrough-amid-swirl-of-controversy/" target="_blank" rel="noopener">Scientific American — dispute</a>
       <a href="https://www.axios.com/2026/09/08/openai-math-solution-navier-stokes-credit" target="_blank" rel="noopener">Axios — credit controversy</a>
       <a href="https://www.technologyreview.com/2026/09/08/1143747/what-openais-latest-controversy-tells-us-about-the-future-of-math/" target="_blank" rel="noopener">MIT Technology Review — analysis</a>
+      <span class="source-note">Primary sources establish what each party said. Reporting provides context; neither is a substitute for independent mathematical review.</span>
     </div>
   </div>
 </footer>
@@ -394,89 +427,152 @@
 // actor: "duo" (Buckmaster & Alpöge) | "openai" | "community"
 // disputed: true adds an amber "disputed" flag to that entry
 // ---------------------------------------------------------------
+const TRACKER = {
+  updatedAt: "2026-09-09T09:00:00+05:30",
+  displayUpdatedAt: "Sep 9, 2026 · 9:00 AM IST"
+};
+
+const SOURCES = {
+  openai: { label: "OpenAI announcement", url: "https://openai.com/index/navier-stokes-solution/" },
+  buckmaster: { label: "Buckmaster statement", url: "https://cims.nyu.edu/~tristanb/statement.pdf" },
+  bubeck: { label: "Bubeck public response", url: "https://x.com/SebastienBubeck" },
+  tao: { label: "Tao public commentary", url: "https://mathstodon.xyz/@tao/117233528517340774" }
+};
+
 const TIMELINE = [
   {
-    date: "Aug 15, 2026",
+    date: "2026-08-15",
+    displayDate: "Aug 15, 2026",
     actor: "duo",
     tag: "Private research",
     title: "Buckmaster and Alpöge push a promising approach forward",
-    desc: "Building on work by Diego Córdoba and Luis Martínez-Zoroa, the pair spend months extending it toward a blow-up result for the Euler equations, using several AI models including Claude and OpenAI's Codex to help develop and write up the math."
+    desc: "Buckmaster says that, building on work by Diego Córdoba and Luis Martínez-Zoroa, the pair spent months extending an approach toward a blow-up result for the Euler equations, using several AI models to help develop and write up the mathematics.",
+    sources: [SOURCES.buckmaster]
   },
   {
-    date: "Aug 28 – Sep 1, 2026",
+    date: "2026-08-28",
+    displayDate: "Aug 28–Sep 1, 2026",
     actor: "openai",
     tag: "OpenAI escalates",
     title: "OpenAI redirects major compute to the problem",
-    desc: "OpenAI says it trained an internal model with advanced math capabilities and then assigned substantially more compute to Navier–Stokes after hearing rumors that researchers connected to Anthropic were close to a result. Reports differ on the exact start date."
+    desc: "OpenAI says training for an internal model began on August 28 and its multi-problem evaluation effort began after it heard rumors on September 1. The two dates describe different stages, rather than a settled single start date.",
+    sources: [SOURCES.openai]
   },
   {
-    date: "Sep 3, 2026",
+    date: "2026-09-03",
+    displayDate: "Sep 3, 2026",
     actor: "openai",
     tag: "Outreach",
     title: "OpenAI requests a call with Buckmaster",
-    desc: "According to Buckmaster, OpenAI reaches out asking to talk — before any public announcement exists that would explain the interest."
+    desc: "According to Buckmaster, OpenAI reached out to arrange a conversation before a public announcement explained the interest.",
+    sources: [SOURCES.buckmaster]
   },
   {
-    date: "Sep 6, 2026",
+    date: "2026-09-06",
+    displayDate: "Sep 6, 2026",
     actor: "openai",
     tag: "Disputed calls",
     title: "Two calls raise the credit dispute",
-    desc: "<span class=\"t-disputed-lbl\">BUCKMASTER'S ACCOUNT, DISPUTED BY OPENAI</span>Bubeck tells Buckmaster an internal model has already produced a roughly 100-page forced-Navier-Stokes proof using the same route he and Alpöge had been pursuing. Buckmaster says Bubeck twice proposed dropping Alpöge from co-authorship because he works at Anthropic, and — when Buckmaster said he'd go public — allegedly asked \"why would you ruin your career?\" OpenAI's internal Lean verification is completed the same day.",
-    disputed: true
+    desc: "Buckmaster says Bubeck described an internal forced-Navier–Stokes proof, urged him to exclude Alpöge from potential authorship, and made a career-related remark. OpenAI disputes this characterization; its announcement says Lean verification was completed on September 6.",
+    disputed: true,
+    sources: [SOURCES.buckmaster, SOURCES.openai, SOURCES.bubeck]
   },
   {
-    date: "Sep 7, 2026, 11:58pm ET",
+    date: "2026-09-07T23:58:00-04:00",
+    displayDate: "Sep 7, 2026 · 11:58 PM ET",
     actor: "duo",
     tag: "Public statement",
     title: "Buckmaster posts his account, plus the pair's own proofs",
-    desc: "Buckmaster publishes a statement describing the week's events, alongside Lean-verified proofs he and Alpöge produced for related fluid systems (including a forced Euler result and Boussinesq/porous-media results). He states explicitly that he hasn't seen OpenAI's proof and isn't accusing anyone of a specific act."
+    desc: "Buckmaster publishes a statement and related results for forced Euler, Boussinesq, and porous-media systems. He says he has not seen OpenAI's proof and does not accuse anyone of a specific act.",
+    sources: [SOURCES.buckmaster]
   },
   {
-    date: "Sep 8, 2026",
+    date: "2026-09-08",
+    displayDate: "Sep 8, 2026",
     actor: "openai",
     tag: "Announcement",
-    title: "OpenAI publishes its Navier–Stokes proof",
-    desc: "OpenAI releases a 166-page manuscript and Lean formalization claiming that three-dimensional, forced Navier–Stokes solutions can develop a finite-time singularity, plus a separate 57-page proof for the unforced Euler equations. The company says the full week's push, across roughly 10,000 coordinated agents, consumed about 300 billion output tokens — an estimated $22.5 million in compute."
+    title: "OpenAI publishes a proposed Navier–Stokes solution",
+    desc: "OpenAI releases a 166-page manuscript and Lean formalization claiming that three-dimensional, smoothly forced Navier–Stokes solutions can develop a finite-time singularity, plus a separate proof for unforced Euler. It reports roughly 10,000 agents and about 130 billion output tokens for the Navier–Stokes effort; 300 billion covers all attempted problems.",
+    sources: [SOURCES.openai]
   },
   {
-    date: "Sep 8, 2026",
+    date: "2026-09-08",
+    displayDate: "Sep 8, 2026",
     actor: "openai",
     tag: "Rebuttal",
     title: "Bubeck rejects Buckmaster's characterization",
-    desc: "In a press briefing, Bubeck calls the account \"false and inflammatory,\" says neither OpenAI's researchers nor its agents saw the pair's work before it was public, and shares texts he says show he proposed a coordinated release rather than pressure. He doesn't deny the \"ruin your career\" line outright but calls it a frustrated aside, retracted immediately."
+    desc: "Bubeck calls Buckmaster's account false and inflammatory, says OpenAI did not see the pair's work before publication, and presents his account of a coordinated release. The parties disagree about the authorship discussion and career-related remark.",
+    sources: [SOURCES.bubeck, SOURCES.openai]
   },
   {
-    date: "Sep 8, 2026",
+    date: "2026-09-08",
+    displayDate: "Sep 8, 2026",
     actor: "openai",
     tag: "Statement",
     title: "Sam Altman backs Bubeck publicly",
-    desc: "OpenAI's CEO says Bubeck \"acted with integrity and generosity throughout,\" and reiterates that OpenAI offered to let Buckmaster and Alpöge publish first once it understood their result covered Euler, not the full Navier–Stokes problem."
+    desc: "OpenAI reiterates that it offered a concurrent release after learning that Buckmaster and Alpöge had a forced-Euler result rather than a Navier–Stokes solution.",
+    sources: [SOURCES.openai]
   },
   {
-    date: "Sep 8, 2026",
+    date: "2026-09-08",
+    displayDate: "Sep 8, 2026",
     actor: "community",
     tag: "Reaction",
     title: "Terrence Tao weighs in",
-    desc: "Tao calls Buckmaster and Alpöge's push on the Córdoba–Martínez-Zoroa approach a genuinely remarkable achievement, and separately raises concern that rumor-triggered, compute-heavy corporate races over open problems could discourage mathematicians from sharing early research directions at all."
+    desc: "Tao describes Buckmaster and Alpöge's work as a remarkable achievement and raises concern that rumor-triggered, compute-heavy races may discourage researchers from sharing early directions.",
+    sources: [SOURCES.tao]
   }
 ];
 
+function element(tag, className, text){
+  const node = document.createElement(tag);
+  if(className) node.className = className;
+  if(text) node.textContent = text;
+  return node;
+}
+
 function renderTimeline(){
   const container = document.getElementById('timelineEntries');
-  container.innerHTML = TIMELINE.map((e, i) => `
-    <div class="t-entry" data-actor="${e.actor}" style="transition-delay:${Math.min(i*40,200)}ms">
-      <div class="t-date mono">${e.date}</div>
-      <div class="t-dot"></div>
-      <div class="t-body">
-        <div class="t-mobile-date mono">${e.date}</div>
-        <div class="t-tag">${e.tag}</div>
-        <div class="t-title">${e.title}</div>
-        <div class="t-desc${e.disputed ? ' disputed' : ''}">${e.desc}</div>
-      </div>
-    </div>
-  `).join('');
+  const fragment = document.createDocumentFragment();
+  TIMELINE.forEach((e, i) => {
+    const entry = element('li', 't-entry');
+    entry.dataset.actor = e.actor;
+    entry.style.transitionDelay = `${Math.min(i * 40, 200)}ms`;
+
+    const date = element('time', 't-date mono', e.displayDate);
+    date.dateTime = e.date;
+    entry.append(date, element('span', 't-dot'));
+
+    const body = element('div', 't-body');
+    const mobileDate = element('time', 't-mobile-date mono', e.displayDate);
+    mobileDate.dateTime = e.date;
+    body.append(mobileDate, element('span', 't-tag', e.tag), element('h3', 't-title', e.title));
+
+    const description = element('p', `t-desc${e.disputed ? ' disputed' : ''}`);
+    if(e.disputed) description.append(element('span', 't-disputed-lbl', 'CONTESTED ACCOUNT — SEE SOURCES'));
+    description.append(document.createTextNode(e.desc));
+    body.append(description);
+
+    const sourceLine = element('p', 't-source');
+    sourceLine.append(document.createTextNode('Sources: '));
+    e.sources.forEach((source, index) => {
+      const link = document.createElement('a');
+      link.href = source.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = source.label;
+      sourceLine.append(link);
+      if(index < e.sources.length - 1) sourceLine.append(document.createTextNode(' · '));
+    });
+    body.append(sourceLine);
+    entry.append(body);
+    fragment.append(entry);
+  });
+  container.replaceChildren(fragment);
 }
 renderTimeline();
+document.getElementById('lastUpdated').dateTime = TRACKER.updatedAt;
+document.getElementById('lastUpdated').textContent = TRACKER.displayUpdatedAt;
 
 const entries = document.querySelectorAll('.t-entry');
 const io = new IntersectionObserver((items) => {
@@ -503,7 +599,7 @@ updateSpine();
 // ---------------------------------------------------------------
 const canvas2d = document.getElementById('vortex2d');
 const ctx2d = canvas2d.getContext('2d');
-let W2, H2, particles = [];
+let W2, H2, particles = [], heroFrame = null, heroVisible = true;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function resize2d(){
@@ -536,11 +632,20 @@ function draw2d(){
     ctx2d.arc(x,y,p.size*devicePixelRatio,0,Math.PI*2);
     ctx2d.fill();
   });
-  requestAnimationFrame(draw2d);
+  heroFrame = null;
+  if(heroVisible && !document.hidden && !reduceMotion) heroFrame = requestAnimationFrame(draw2d);
+}
+function resumeHeroAnimation(){
+  if(!reduceMotion && heroVisible && !document.hidden && !heroFrame) heroFrame = requestAnimationFrame(draw2d);
 }
 window.addEventListener('resize', () => { resize2d(); initParticles(); });
 resize2d(); initParticles();
-if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
+if(!reduceMotion) resumeHeroAnimation(); else draw2d();
+new IntersectionObserver(([entry]) => {
+  heroVisible = entry.isIntersecting;
+  if(heroVisible) resumeHeroAnimation();
+}, { threshold: 0 }).observe(document.querySelector('.hero'));
+document.addEventListener('visibilitychange', () => { if(!document.hidden) resumeHeroAnimation(); });
 
 // ---------------------------------------------------------------
 // 3D vortex model (three.js) — real orbit camera with zoom.
@@ -553,7 +658,7 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
 
   const parent = stage.parentElement;
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x080b10, 7, 15);
+  scene.fog = new THREE.FogExp2(0x080b10, 0.035);
 
   const camera = new THREE.PerspectiveCamera(40, parent.clientWidth/parent.clientHeight, 0.1, 100);
 
@@ -564,70 +669,99 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
   else if('outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
+  parent.classList.add('interactive');
 
-  // ---- lighting: key + cool fill + soft ambient, for real dimensionality
-  scene.add(new THREE.AmbientLight(0x8899aa, 0.55));
-  const key = new THREE.DirectionalLight(0xfff2e6, 1.3);
-  key.position.set(4, 6, 5);
+  // ---- sculptural, multi-layer streamline field — a conceptual flow map,
+  // not a numerical rendering of the proposed proof.
+  scene.add(new THREE.AmbientLight(0x9db6c5, 0.45));
+  const key = new THREE.DirectionalLight(0xffe2c1, 1.7);
+  key.position.set(4, 7, 5);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0x4d7fbf, 0.5);
-  fill.position.set(-5, -1, -4);
-  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0x42a8ff, 1.05);
+  rim.position.set(-6, 1, -5);
+  scene.add(rim);
+  const lowerFill = new THREE.DirectionalLight(0x2de0de, 0.55);
+  lowerFill.position.set(0, -5, 3);
+  scene.add(lowerFill);
 
   const group = new THREE.Group();
   scene.add(group);
 
-  const tealC = new THREE.Color(0x52d9c4);
-  const heatC = new THREE.Color(0xff7a4d);
-  const H_TOTAL = 5.6, R0 = 2.1, TURNS = 3.2, STRANDS = 8;
-  const strandCurves = [];
+  const coolPalette = [0x35d9e8, 0x269ee9, 0x4c84ef, 0x59c9e7];
+  const ribbonPalette = [0x315ecb, 0x347eef, 0x508ff0, 0x2354ad];
+  const warmPalette = [0xffbe72, 0xf69a50, 0xffd0a4, 0xdc966e];
+  const H_TOTAL = 7.2;
+  const streamlines = [];
+  const flowDots = [];
 
-  for(let s=0; s<STRANDS; s++){
-    const phase = (s / STRANDS) * Math.PI * 2;
-    const pts = [];
-    const N = 160;
-    for(let i=0;i<=N;i++){
-      const t = i/N;
-      const r = R0 * Math.pow(1 - t, 0.6) * (1 + 0.05*Math.sin(t*22 + s));
-      const y = (t - 0.5) * H_TOTAL;
-      const ang = phase + t * TURNS * Math.PI * 2;
-      pts.push(new THREE.Vector3(Math.cos(ang)*r, y, Math.sin(ang)*r));
+  const streamStyles = {
+    outer: { count: 18, palette: coolPalette, maxRadius: 2.6, turnBase: 1.8, turnStep: 0.09, beltPower: 0.58, tube: 0.014, samples: 126, tracerEvery: 3 },
+    ribbon: { count: 10, palette: ribbonPalette, maxRadius: 1.82, turnBase: 3.1, turnStep: 0.12, beltPower: 0.72, tube: 0.034, samples: 150, tracerEvery: 2 },
+    core: { count: 18, palette: warmPalette, maxRadius: 0.64, turnBase: 5.0, turnStep: 0.15, beltPower: 0.88, tube: 0.022, samples: 148, tracerEvery: 3 }
+  };
+
+  function addStreamline(index, type){
+    const style = streamStyles[type];
+    const phase = (index / style.count) * Math.PI * 2 + (type === 'core' ? 0.24 : type === 'ribbon' ? 0.12 : 0);
+    const turns = style.turnBase + (index % 5) * style.turnStep;
+    const maxRadius = style.maxRadius * (0.9 + (index % 6) * 0.035);
+    const wobble = type === 'outer' ? 0.045 : 0.025;
+    const samples = style.samples;
+    const points = [];
+
+    for(let step=0; step<=samples; step++){
+      const t = step / samples;
+      const belt = Math.pow(Math.sin(Math.PI * t), style.beltPower);
+      const ripple = 1 + wobble * Math.sin(t * Math.PI * (3 + index % 3) + phase);
+      const radius = 0.055 + maxRadius * belt * ripple;
+      const twist = phase + t * turns * Math.PI * 2 + 0.07 * Math.sin(t * Math.PI * 2 + phase);
+      const y = (t - 0.5) * H_TOTAL + 0.045 * Math.sin(t * Math.PI * 4 + phase);
+      points.push(new THREE.Vector3(
+        Math.cos(twist) * radius,
+        y,
+        Math.sin(twist) * radius * (0.9 + 0.045 * Math.sin(phase))
+      ));
     }
-    const curve = new THREE.CatmullRomCurve3(pts);
-    strandCurves.push(curve);
-    const radialSeg = 10;
-    const tubeR = 0.03;
-    const geo = new THREE.TubeGeometry(curve, 240, tubeR, radialSeg, false);
 
+    const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal', 0.42);
+    const radialSegments = type === 'ribbon' ? 8 : 6;
+    const tubeRadius = style.tube + (index % 3) * (type === 'ribbon' ? 0.004 : 0.003);
+    const geometry = new THREE.TubeGeometry(curve, samples, tubeRadius, radialSegments, false);
     const colors = [];
-    const posAttr = geo.attributes.position;
-    const vertPerRing = radialSeg + 1;
-    for(let i=0;i<posAttr.count;i++){
-      const t = Math.floor(i/vertPerRing) / 240;
-      const col = tealC.clone().lerp(heatC, Math.pow(1-t, 2.3));
-      colors.push(col.r, col.g, col.b);
+    const start = new THREE.Color(style.palette[index % style.palette.length]);
+    const end = start.clone().lerp(new THREE.Color(type === 'core' ? 0xffe0bd : 0x94ecf2), type === 'core' ? 0.16 : 0.1);
+    const verticesPerRing = radialSegments + 1;
+    for(let vertex=0; vertex<geometry.attributes.position.count; vertex++){
+      const t = Math.floor(vertex / verticesPerRing) / samples;
+      const brightness = 0.45 + 0.55 * Math.pow(Math.sin(Math.PI * t), 0.55);
+      const color = start.clone().lerp(end, t).multiplyScalar(brightness);
+      colors.push(color.r, color.g, color.b);
     }
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-    const mat = new THREE.MeshPhysicalMaterial({
-      vertexColors: true, roughness: 0.3, metalness: 0.08,
-      clearcoat: 0.5, clearcoatRoughness: 0.3,
-      emissive: 0x0d1a17, emissiveIntensity: 0.35
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    const material = new THREE.MeshPhysicalMaterial({
+      vertexColors: true, roughness: type === 'ribbon' ? 0.2 : 0.28, metalness: 0.04,
+      clearcoat: type === 'ribbon' ? 0.82 : 0.55, clearcoatRoughness: 0.24,
+      emissive: start.clone().multiplyScalar(type === 'core' ? 0.1 : 0.07), emissiveIntensity: 0.5
     });
-    group.add(new THREE.Mesh(geo, mat));
+    group.add(new THREE.Mesh(geometry, material));
+    streamlines.push({ curve, color: start, speed: (type === 'core' ? 0.09 : 0.055) + (index % 4) * 0.007, tracer: index % style.tracerEvery === 0 });
   }
+
+  Object.entries(streamStyles).forEach(([type, style]) => {
+    for(let i=0; i<style.count; i++) addStreamline(i, type);
+  });
 
   // ---- central axis ("axial stretching")
   const axisMat = new THREE.LineBasicMaterial({ color: 0x5a6674, transparent:true, opacity:0.7 });
   const axisGeo = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0,-H_TOTAL/2 - 0.2,0), new THREE.Vector3(0,H_TOTAL/2 + 0.6,0)
+    new THREE.Vector3(0,-H_TOTAL/2 - 0.25,0), new THREE.Vector3(0,H_TOTAL/2 + 0.7,0)
   ]);
   group.add(new THREE.Line(axisGeo, axisMat));
   const cone = new THREE.Mesh(
     new THREE.ConeGeometry(0.065, 0.26, 14),
     new THREE.MeshBasicMaterial({ color: 0x5a6674 })
   );
-  cone.position.set(0, H_TOTAL/2 + 0.73, 0);
+  cone.position.set(0, H_TOTAL/2 + 0.84, 0);
   group.add(cone);
 
   // ---- glowing core sprite at the vortex tip ("singularity")
@@ -642,39 +776,31 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
     return new THREE.CanvasTexture(c);
   }
   const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: glowTexture(), blending: THREE.AdditiveBlending, transparent:true, depthWrite:false
+    map: glowTexture(), blending: THREE.AdditiveBlending, transparent:true, depthWrite:false, opacity:0.4
   }));
-  glowSprite.scale.set(1.1,1.1,1.1);
-  glowSprite.position.set(0, H_TOTAL/2 - 0.04, 0);
+  glowSprite.scale.set(1.28,1.28,1.28);
+  glowSprite.position.set(0, 0.15, 0);
   group.add(glowSprite);
 
-  // ---- floor grid for ground-plane depth reference
-  const grid = new THREE.GridHelper(9, 14, 0x2a3542, 0x1a222c);
-  grid.position.y = -H_TOTAL/2 - 0.65;
-  grid.material.transparent = true;
-  grid.material.opacity = 0.55;
-  scene.add(grid);
-
-  // ---- flow particles tracing motion along each strand
-  const flowDots = [];
-  const dotGeo = new THREE.SphereGeometry(0.055, 10, 10);
-  strandCurves.forEach((curve, si) => {
-    const perStrand = 2;
-    for(let k=0; k<perStrand; k++){
-      const mat = new THREE.MeshBasicMaterial({ color: 0xffdcc2, transparent:true, opacity:0.95 });
-      const dot = new THREE.Mesh(dotGeo, mat);
-      dot.userData.t = (k/perStrand + si*0.13) % 1;
-      dot.userData.speed = 0.00075 + (si%3)*0.00012;
-      dot.userData.curve = curve;
-      group.add(dot);
-      flowDots.push(dot);
-    }
+  // ---- moving tracer lights reveal the direction of flow through the field.
+  streamlines.forEach((stream, index) => {
+    if(!stream.tracer) return;
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(index % 3 === 0 ? 0.045 : 0.032, 9, 9),
+      new THREE.MeshBasicMaterial({ color: stream.color, transparent:true, opacity:0.9 })
+    );
+    dot.userData.t = (index * 0.173) % 1;
+    dot.userData.speed = stream.speed;
+    dot.userData.curve = stream.curve;
+    dot.userData.color = stream.color;
+    group.add(dot);
+    flowDots.push(dot);
   });
 
   // ---- orbit camera: spherical coordinates around target
-  let radius = 8.32, theta = 0, phi = 1.402;
-  const target = new THREE.Vector3(0, 0.15, 0);
-  const RADIUS_MIN = 4.2, RADIUS_MAX = 14;
+  let radius = 10.8, theta = -0.38, phi = 1.43;
+  const target = new THREE.Vector3(0, 0, 0);
+  const RADIUS_MIN = 5.2, RADIUS_MAX = 16;
 
   function updateCamera(){
     camera.position.x = target.x + radius * Math.sin(phi) * Math.sin(theta);
@@ -687,11 +813,13 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
   let dragging = false, lastX = 0, lastY = 0, autoRotate = true, lastInteract = 0;
 
   function pointerDown(e){
+    if(e.touches && e.touches.length !== 1) return;
     dragging = true; autoRotate = false;
     const p = e.touches ? e.touches[0] : e;
     lastX = p.clientX; lastY = p.clientY;
   }
   function pointerMove(e){
+    if(e.touches && e.touches.length !== 1) return;
     if(!dragging) return;
     const p = e.touches ? e.touches[0] : e;
     const dx = p.clientX - lastX, dy = p.clientY - lastY;
@@ -724,6 +852,7 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
   let pinchDist = null;
   stage.addEventListener('touchstart', (e) => {
     if(e.touches.length === 2){
+      dragging = false;
       pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
     }
   }, {passive:true});
@@ -739,42 +868,56 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
   document.getElementById('vZoomIn').addEventListener('click', () => zoomBy(0.85));
   document.getElementById('vZoomOut').addEventListener('click', () => zoomBy(1.18));
   document.getElementById('vReset').addEventListener('click', () => {
-    radius = 8.32; theta = 0; phi = 1.402; autoRotate = true; updateCamera();
+    radius = 10.8; theta = -0.38; phi = 1.43; autoRotate = true; updateCamera();
   });
 
   const clock = new THREE.Clock();
+  let vortexFrame = null, vortexVisible = false;
   function animate(){
-    requestAnimationFrame(animate);
+    vortexFrame = null;
+    if(!vortexVisible || document.hidden || reduceMotion) return;
     const dt = clock.getDelta();
 
     if(autoRotate && !reduceMotion){
-      theta += dt * 0.14;
+      theta += dt * 0.038;
       updateCamera();
     } else if(!dragging && performance.now() - lastInteract > 4200){
       autoRotate = true;
     }
 
     if(!reduceMotion){
-      const pulse = 1 + Math.sin(performance.now()*0.0028) * 0.14;
-      glowSprite.scale.set(1.1*pulse, 1.1*pulse, 1.1*pulse);
+      const pulse = 1 + Math.sin(performance.now()*0.0024) * 0.055;
+      glowSprite.scale.set(1.28*pulse, 1.28*pulse, 1.28*pulse);
 
       flowDots.forEach(d => {
-        d.userData.t = (d.userData.t + d.userData.speed) % 1;
+        d.userData.t = (d.userData.t + dt * d.userData.speed) % 1;
         const pos = d.userData.curve.getPointAt(d.userData.t);
         d.position.copy(pos);
-        const c = tealC.clone().lerp(heatC, Math.pow(1-d.userData.t, 2.3));
-        d.material.color.copy(c);
+        d.material.color.copy(d.userData.color);
+        const flare = 0.94 + Math.sin(performance.now() * 0.006 + d.userData.t * 14) * 0.06;
+        d.scale.setScalar(flare);
       });
     }
 
     renderer.render(scene, camera);
+    vortexFrame = requestAnimationFrame(animate);
   }
-  animate();
+  function resumeVortexAnimation(){
+    if(!vortexVisible || document.hidden) return;
+    renderer.render(scene, camera);
+    if(!reduceMotion && !vortexFrame) vortexFrame = requestAnimationFrame(animate);
+  }
+  new IntersectionObserver(([entry]) => {
+    vortexVisible = entry.isIntersecting;
+    if(vortexVisible) resumeVortexAnimation();
+  }, { threshold: 0.05 }).observe(parent);
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) resumeVortexAnimation(); });
 
   window.addEventListener('resize', () => {
     const w = parent.clientWidth, h = parent.clientHeight;
     camera.aspect = w/h; camera.updateProjectionMatrix();
     renderer.setSize(w, h);
+    if(vortexVisible) renderer.render(scene, camera);
   });
 })();
 </script>
