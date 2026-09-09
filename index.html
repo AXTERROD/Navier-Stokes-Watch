@@ -116,24 +116,38 @@
     position: relative; margin-top: 48px;
     background: radial-gradient(ellipse at 60% 30%, #0f1720 0%, #080b10 70%);
     border: 1px solid var(--line); border-radius: 6px;
-    height: 560px; overflow:hidden;
+    height: 640px; overflow:hidden;
   }
-  #vortex3d{ position:absolute; inset:0; width:100%; height:100%; cursor: grab; }
+  #vortex3d{ position:absolute; inset:0; width:100%; height:100%; cursor: grab; display:block; }
   #vortex3d:active{ cursor: grabbing; }
   .vortex-label{
     position:absolute; font-family:'IBM Plex Sans', sans-serif; font-size: 14px; color: var(--text-dim);
-    pointer-events:none; line-height: 1.3;
+    pointer-events:none; line-height: 1.3; z-index: 3;
   }
   .vortex-label .line{
     position:absolute; background: var(--text-faint); height:1px; transform-origin: left center;
   }
-  .vl-top{ top: 48px; right: 46px; text-align:right; }
-  .vl-mid{ top: 250px; left: 42px; }
+  .vl-top{ top: 40px; right: 46px; text-align:right; }
+  .vl-mid{ top: 300px; left: 42px; }
   .vortex-hint{
     position:absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
     font-family:'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-faint);
-    display:flex; align-items:center; gap:8px;
+    display:flex; align-items:center; gap:8px; z-index: 3; pointer-events:none;
   }
+  .vortex-controls{
+    position:absolute; bottom: 16px; right: 16px; z-index: 4;
+    display:flex; flex-direction: column; gap: 1px;
+    background: rgba(14,20,27,0.7); border: 1px solid var(--line-strong); border-radius: 4px;
+    overflow:hidden; backdrop-filter: blur(6px);
+  }
+  .vortex-controls button{
+    width: 30px; height: 30px; border: none; background: transparent; color: var(--text-dim);
+    font-family:'IBM Plex Mono', monospace; font-size: 15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    border-bottom: 1px solid var(--line);
+  }
+  .vortex-controls button:last-child{ border-bottom:none; font-size: 12px; }
+  .vortex-controls button:hover{ background: rgba(255,255,255,0.06); color: var(--text); }
   .vortex-caption{ margin-top: 16px; font-size: 13px; color: var(--text-faint); line-height:1.6; max-width: 680px; }
 
   /* ---------- TIMELINE ---------- */
@@ -271,9 +285,14 @@
       <canvas id="vortex3d"></canvas>
       <div class="vortex-label vl-top">axial stretching<div class="line" style="width:70px; top:10px; left:-84px; transform: rotate(24deg);"></div></div>
       <div class="vortex-label vl-mid">inward spiral<div class="line" style="width:60px; top:10px; left:-72px; transform: rotate(-18deg);"></div></div>
-      <div class="vortex-hint">drag to rotate</div>
+      <div class="vortex-hint">drag to orbit · scroll or pinch to zoom</div>
+      <div class="vortex-controls">
+        <button id="vZoomIn" aria-label="Zoom in">+</button>
+        <button id="vZoomOut" aria-label="Zoom out">–</button>
+        <button id="vReset" aria-label="Reset view">⟲</button>
+      </div>
     </div>
-    <p class="vortex-caption">A simplified model of the shape OpenAI's proof describes: the fluid stretches along its axis while spiraling inward, concentrating more and more speed into a shrinking core. This is illustrative of the general mechanism, not a rendering of the actual proof's data.</p>
+    <p class="vortex-caption">A simplified model of the shape OpenAI's proof describes: the fluid stretches along its axis while spiraling inward, concentrating more and more speed into a shrinking core — the moving dots trace that inward, accelerating motion. This is illustrative of the general mechanism, not a rendering of the actual proof's data.</p>
   </div>
 </section>
 
@@ -348,6 +367,7 @@
     <div class="update-note">
       <strong>This page is meant to be kept current.</strong> The timeline is stored as a small data array in the page's own code — new developments can be added as new entries without touching the design. Send Claude the next update whenever there's news and it can edit this file directly.
       <ul class="changelog">
+        <li class="mono">Sep 9 — Rebuilt the 3D vortex model with a real orbit camera (drag + scroll/pinch to zoom), floor grid and fog for depth, and moving particles that trace the inward/accelerating flow.</li>
         <li class="mono">Sep 9 — Added Sept 6 call details, Bubeck's rebuttal, Altman's statement, Tao's separate praise for the Euler result, and compute-cost figures. Corrected the OpenAI start-date discrepancy (Aug 28 vs. Sept 1, both reported).</li>
       </ul>
     </div>
@@ -524,7 +544,9 @@ resize2d(); initParticles();
 if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
 
 // ---------------------------------------------------------------
-// 3D vortex model (three.js) — draggable, illustrative not literal
+// 3D vortex model (three.js) — real orbit camera with zoom.
+// Illustrative of the blow-up mechanism, not a rendering of the
+// actual proof's numerical data.
 // ---------------------------------------------------------------
 (function(){
   const stage = document.getElementById('vortex3d');
@@ -532,79 +554,141 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
 
   const parent = stage.parentElement;
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, parent.clientWidth/parent.clientHeight, 0.1, 100);
-  camera.position.set(0, 1.4, 8.2);
+  scene.fog = new THREE.Fog(0x080b10, 7, 15);
+
+  const camera = new THREE.PerspectiveCamera(40, parent.clientWidth/parent.clientHeight, 0.1, 100);
 
   const renderer = new THREE.WebGLRenderer({ canvas: stage, antialias:true, alpha:true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(parent.clientWidth, parent.clientHeight);
+  if('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
+  else if('outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
 
-  scene.add(new THREE.AmbientLight(0x8899aa, 0.9));
-  const key = new THREE.DirectionalLight(0xffffff, 1.1);
-  key.position.set(3, 5, 4);
+  // ---- lighting: key + cool fill + soft ambient, for real dimensionality
+  scene.add(new THREE.AmbientLight(0x8899aa, 0.55));
+  const key = new THREE.DirectionalLight(0xfff2e6, 1.3);
+  key.position.set(4, 6, 5);
   scene.add(key);
+  const fill = new THREE.DirectionalLight(0x4d7fbf, 0.5);
+  fill.position.set(-5, -1, -4);
+  scene.add(fill);
 
   const group = new THREE.Group();
   scene.add(group);
 
   const tealC = new THREE.Color(0x52d9c4);
   const heatC = new THREE.Color(0xff7a4d);
-  const H_TOTAL = 5.4, R0 = 2.05, TURNS = 3.1, STRANDS = 7;
+  const H_TOTAL = 5.6, R0 = 2.1, TURNS = 3.2, STRANDS = 8;
+  const strandCurves = [];
 
   for(let s=0; s<STRANDS; s++){
     const phase = (s / STRANDS) * Math.PI * 2;
     const pts = [];
-    const N = 140;
+    const N = 160;
     for(let i=0;i<=N;i++){
       const t = i/N;
-      const r = R0 * Math.pow(1 - t, 0.62) * (1 + 0.06*Math.sin(t*22 + s));
+      const r = R0 * Math.pow(1 - t, 0.6) * (1 + 0.05*Math.sin(t*22 + s));
       const y = (t - 0.5) * H_TOTAL;
       const ang = phase + t * TURNS * Math.PI * 2;
       pts.push(new THREE.Vector3(Math.cos(ang)*r, y, Math.sin(ang)*r));
     }
     const curve = new THREE.CatmullRomCurve3(pts);
-    const tubeR = 0.028;
-    const geo = new THREE.TubeGeometry(curve, 220, tubeR, 6, false);
+    strandCurves.push(curve);
+    const radialSeg = 10;
+    const tubeR = 0.03;
+    const geo = new THREE.TubeGeometry(curve, 240, tubeR, radialSeg, false);
 
     const colors = [];
     const posAttr = geo.attributes.position;
-    const vertPerRing = 7;
+    const vertPerRing = radialSeg + 1;
     for(let i=0;i<posAttr.count;i++){
-      const t = Math.floor(i/vertPerRing) / 220;
-      const col = tealC.clone().lerp(heatC, Math.pow(1-t, 2.4));
+      const t = Math.floor(i/vertPerRing) / 240;
+      const col = tealC.clone().lerp(heatC, Math.pow(1-t, 2.3));
       colors.push(col.r, col.g, col.b);
     }
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-    const mat = new THREE.MeshStandardMaterial({
-      vertexColors: true, roughness: 0.35, metalness: 0.15,
-      emissive: 0x0a1512, emissiveIntensity: 0.4
+    const mat = new THREE.MeshPhysicalMaterial({
+      vertexColors: true, roughness: 0.3, metalness: 0.08,
+      clearcoat: 0.5, clearcoatRoughness: 0.3,
+      emissive: 0x0d1a17, emissiveIntensity: 0.35
     });
-    const mesh = new THREE.Mesh(geo, mat);
-    group.add(mesh);
+    group.add(new THREE.Mesh(geo, mat));
   }
 
-  // central axis arrow ("axial stretching")
-  const axisMat = new THREE.LineBasicMaterial({ color: 0x5a6674 });
+  // ---- central axis ("axial stretching")
+  const axisMat = new THREE.LineBasicMaterial({ color: 0x5a6674, transparent:true, opacity:0.7 });
   const axisGeo = new THREE.BufferGeometry().setFromPoints([
     new THREE.Vector3(0,-H_TOTAL/2 - 0.2,0), new THREE.Vector3(0,H_TOTAL/2 + 0.6,0)
   ]);
   group.add(new THREE.Line(axisGeo, axisMat));
   const cone = new THREE.Mesh(
-    new THREE.ConeGeometry(0.06, 0.24, 12),
+    new THREE.ConeGeometry(0.065, 0.26, 14),
     new THREE.MeshBasicMaterial({ color: 0x5a6674 })
   );
-  cone.position.set(0, H_TOTAL/2 + 0.72, 0);
+  cone.position.set(0, H_TOTAL/2 + 0.73, 0);
   group.add(cone);
 
-  group.rotation.x = 0.18;
+  // ---- glowing core sprite at the vortex tip ("singularity")
+  function glowTexture(){
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d');
+    const grad = g.createRadialGradient(64,64,0,64,64,64);
+    grad.addColorStop(0, 'rgba(255,190,140,1)');
+    grad.addColorStop(0.35, 'rgba(255,122,77,0.65)');
+    grad.addColorStop(1, 'rgba(255,122,77,0)');
+    g.fillStyle = grad; g.fillRect(0,0,128,128);
+    return new THREE.CanvasTexture(c);
+  }
+  const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTexture(), blending: THREE.AdditiveBlending, transparent:true, depthWrite:false
+  }));
+  glowSprite.scale.set(1.1,1.1,1.1);
+  glowSprite.position.set(0, H_TOTAL/2 - 0.04, 0);
+  group.add(glowSprite);
 
-  // interaction: drag to rotate, gentle auto-rotate when idle
-  let dragging = false, lastX = 0, lastY = 0, velX = 0.0025, velY = 0;
-  let idleTimer = null;
+  // ---- floor grid for ground-plane depth reference
+  const grid = new THREE.GridHelper(9, 14, 0x2a3542, 0x1a222c);
+  grid.position.y = -H_TOTAL/2 - 0.65;
+  grid.material.transparent = true;
+  grid.material.opacity = 0.55;
+  scene.add(grid);
+
+  // ---- flow particles tracing motion along each strand
+  const flowDots = [];
+  const dotGeo = new THREE.SphereGeometry(0.055, 10, 10);
+  strandCurves.forEach((curve, si) => {
+    const perStrand = 2;
+    for(let k=0; k<perStrand; k++){
+      const mat = new THREE.MeshBasicMaterial({ color: 0xffdcc2, transparent:true, opacity:0.95 });
+      const dot = new THREE.Mesh(dotGeo, mat);
+      dot.userData.t = (k/perStrand + si*0.13) % 1;
+      dot.userData.speed = 0.00075 + (si%3)*0.00012;
+      dot.userData.curve = curve;
+      group.add(dot);
+      flowDots.push(dot);
+    }
+  });
+
+  // ---- orbit camera: spherical coordinates around target
+  let radius = 8.32, theta = 0, phi = 1.402;
+  const target = new THREE.Vector3(0, 0.15, 0);
+  const RADIUS_MIN = 4.2, RADIUS_MAX = 14;
+
+  function updateCamera(){
+    camera.position.x = target.x + radius * Math.sin(phi) * Math.sin(theta);
+    camera.position.y = target.y + radius * Math.cos(phi);
+    camera.position.z = target.z + radius * Math.sin(phi) * Math.cos(theta);
+    camera.lookAt(target);
+  }
+  updateCamera();
+
+  let dragging = false, lastX = 0, lastY = 0, autoRotate = true, lastInteract = 0;
 
   function pointerDown(e){
-    dragging = true; idleTimer = null;
+    dragging = true; autoRotate = false;
     const p = e.touches ? e.touches[0] : e;
     lastX = p.clientX; lastY = p.clientY;
   }
@@ -613,25 +697,77 @@ if(!reduceMotion) requestAnimationFrame(draw2d); else draw2d();
     const p = e.touches ? e.touches[0] : e;
     const dx = p.clientX - lastX, dy = p.clientY - lastY;
     lastX = p.clientX; lastY = p.clientY;
-    velX = dx * 0.004; velY = dy * 0.004;
-    group.rotation.y += velX;
-    group.rotation.x = Math.max(-1.1, Math.min(1.1, group.rotation.x + velY));
+    theta -= dx * 0.0055;
+    phi = Math.max(0.35, Math.min(Math.PI - 0.35, phi - dy * 0.0055));
+    updateCamera();
+    lastInteract = performance.now();
   }
   function pointerUp(){ dragging = false; }
+  function zoomBy(factor){
+    radius = Math.max(RADIUS_MIN, Math.min(RADIUS_MAX, radius * factor));
+    updateCamera();
+    lastInteract = performance.now();
+  }
 
   stage.addEventListener('mousedown', pointerDown);
   window.addEventListener('mousemove', pointerMove);
   window.addEventListener('mouseup', pointerUp);
-  stage.addEventListener('touchstart', pointerDown, {passive:true});
+  stage.addEventListener('touchstart', (e) => { pointerDown(e); autoRotate = false; }, {passive:true});
   window.addEventListener('touchmove', pointerMove, {passive:true});
   window.addEventListener('touchend', pointerUp);
 
+  stage.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomBy(1 + Math.sign(e.deltaY) * 0.08);
+  }, { passive:false });
+
+  // pinch-to-zoom
+  let pinchDist = null;
+  stage.addEventListener('touchstart', (e) => {
+    if(e.touches.length === 2){
+      pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    }
+  }, {passive:true});
+  stage.addEventListener('touchmove', (e) => {
+    if(e.touches.length === 2 && pinchDist){
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      zoomBy(pinchDist / d);
+      pinchDist = d;
+    }
+  }, {passive:true});
+  stage.addEventListener('touchend', () => { pinchDist = null; });
+
+  document.getElementById('vZoomIn').addEventListener('click', () => zoomBy(0.85));
+  document.getElementById('vZoomOut').addEventListener('click', () => zoomBy(1.18));
+  document.getElementById('vReset').addEventListener('click', () => {
+    radius = 8.32; theta = 0; phi = 1.402; autoRotate = true; updateCamera();
+  });
+
+  const clock = new THREE.Clock();
   function animate(){
     requestAnimationFrame(animate);
-    if(!dragging){
-      group.rotation.y += reduceMotion ? 0 : 0.0022;
-      velX *= 0.94; velY *= 0.94;
+    const dt = clock.getDelta();
+
+    if(autoRotate && !reduceMotion){
+      theta += dt * 0.14;
+      updateCamera();
+    } else if(!dragging && performance.now() - lastInteract > 4200){
+      autoRotate = true;
     }
+
+    if(!reduceMotion){
+      const pulse = 1 + Math.sin(performance.now()*0.0028) * 0.14;
+      glowSprite.scale.set(1.1*pulse, 1.1*pulse, 1.1*pulse);
+
+      flowDots.forEach(d => {
+        d.userData.t = (d.userData.t + d.userData.speed) % 1;
+        const pos = d.userData.curve.getPointAt(d.userData.t);
+        d.position.copy(pos);
+        const c = tealC.clone().lerp(heatC, Math.pow(1-d.userData.t, 2.3));
+        d.material.color.copy(c);
+      });
+    }
+
     renderer.render(scene, camera);
   }
   animate();
