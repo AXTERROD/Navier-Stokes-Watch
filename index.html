@@ -24,6 +24,8 @@
 
   *{ box-sizing: border-box; }
   html{ scroll-behavior: smooth; }
+  #main, #problem, #timeline, #dispute, #questions, #sources{ scroll-margin-top: 100px; }
+  @media (max-width: 600px){ #main, #problem, #timeline, #dispute, #questions, #sources{ scroll-margin-top: 128px; } }
   body{
     margin:0;
     background: var(--ink);
@@ -186,7 +188,7 @@
   }
   .t-entry.in{ opacity:1; transform: translateY(0); }
   @media (max-width: 700px){ .t-entry{ grid-template-columns: 0px 1fr; } .t-entry .t-date{ display:none; } }
-  .t-date{ text-align:right; font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--text-faint); padding-top: 3px; }
+  .t-date{ grid-column: 1; text-align:right; font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--text-faint); padding-top: 3px; }
   .t-dot{
     position:absolute; left: 118px; top: 4px; transform: translateX(-50%);
     width: 12px; height:12px; border-radius: 50%; background: var(--ink);
@@ -196,7 +198,7 @@
   .t-entry[data-actor="openai"] .t-dot{ border-color: var(--heat); box-shadow: 0 0 0 4px rgba(255,122,77,0.12); }
   .t-entry[data-actor="duo"] .t-dot{ border-color: var(--teal); box-shadow: 0 0 0 4px rgba(82,217,196,0.12); }
   .t-entry[data-actor="community"] .t-dot{ border-color: var(--text-dim); }
-  .t-body{ padding-left: 40px; }
+  .t-body{ grid-column: 2; padding-left: 40px; }
   @media (max-width: 700px){ .t-body{ padding-left: 40px; } }
   .t-tag{
     display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono', monospace;
