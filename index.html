@@ -121,6 +121,14 @@
   .problem-intro{ max-width: 680px; margin-top: 22px; }
   .problem-intro p{ color: var(--text-dim); font-size: 15.5px; margin: 0 0 16px; }
   .problem-intro strong{ color: var(--text); font-weight: 500; }
+  .clarify-box{
+    margin-top: 28px; padding: 22px 26px; background: var(--panel-2);
+    border-left: 3px solid var(--amber, #e8b34a); border-radius: 2px; max-width: 680px;
+  }
+  .clarify-label{ font-family:'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.03em; color: var(--amber, #e8b34a); margin-bottom: 12px; }
+  .clarify-box p{ font-size: 14.5px; color: var(--text-dim); margin: 0 0 12px; line-height: 1.6; }
+  .clarify-box p:last-child{ margin-bottom: 0; }
+  .clarify-box strong{ color: var(--text); font-weight: 500; }
 
   /* 3D vortex model */
   .vortex-stage{
@@ -401,6 +409,12 @@
       <p>OpenAI's proposed result is a smoothly forced case that begins at rest, then forms an ever-tighter, ever-faster vortex and reaches unbounded speed at its core in finite time. It is a claim about the equations' mathematical model, not a prediction that real fluids move infinitely fast.</p>
     </div>
 
+    <div class="clarify-box">
+      <div class="clarify-label">WHAT THIS DOES AND DOESN'T COVER</div>
+      <p>Clay's official problem statement actually contains four options: <strong>A and B ask about unforced flow</strong> — a fluid left alone, with no outside push — while <strong>C and D allow a smooth external forcing term</strong>, an added nudge. Most mathematicians treat the unforced case as the deeper, harder question.</p>
+      <p>OpenAI's claimed proof addresses <strong>C and D only</strong> — the forced case. It does not claim to resolve unforced blow-up (A/B), which remains fully open. Buckmaster and Alpöge's related results are also forced-case results, across three simplified models, not the full Navier–Stokes system.</p>
+    </div>
+
     <div class="vortex-stage">
       <canvas id="vortex3d" role="img" aria-label="Interactive conceptual model of a vortex that spirals inward and stretches along its axis" aria-describedby="vortexInstructions vortexCaption"></canvas>
       <p class="vortex-fallback">Conceptual schematic unavailable: the interactive model needs WebGL and the Three.js library. The explanation below describes the claimed mechanism.</p>
@@ -478,19 +492,20 @@
     <div class="eyebrow">04 — WHAT'S STILL OPEN</div>
     <h2 class="section-title">Unresolved, as of the last update</h2>
     <div class="questions">
-      <div class="q-item"><div class="q-num">01</div><p><strong>Is the proposed proof correct?</strong> A 166-page manuscript and Lean formalization are public, but independent verification by the mathematical community hasn't concluded.</p></div>
-      <div class="q-item"><div class="q-num">02</div><p><strong>Did rumor or research drive OpenAI's timeline?</strong> Reports disagree on whether OpenAI's push began around August 28 or September 1 — both sides agree it followed rumors, not a leak of specific content.</p></div>
+      <div class="q-item"><div class="q-num">01</div><p><strong>Is the proposed proof correct?</strong> A 166-page manuscript and Lean formalization are public. As of this update, the Clay Mathematics Institute has not accepted it and still lists Navier–Stokes as unsolved; Fefferman says it appears to match the problem as formulated but needs a conventional rewrite and expert review first.</p></div>
+      <div class="q-item"><div class="q-num">02</div><p><strong>Did rumor or research drive OpenAI's timeline?</strong> OpenAI now dates its dedicated push to September 1, after training a separate model from August 28. Buckmaster says Alpöge received "tips" that specific information about their progress had been passed to OpenAI — a firmer claim than OpenAI's account of a general rumor.</p></div>
       <div class="q-item"><div class="q-num">03</div><p><strong>What exactly was said on the September 6 calls?</strong> The authorship-pressure and "ruin your career" claims rest on Buckmaster's account; OpenAI disputes the framing but hasn't offered a full transcript.</p></div>
       <div class="q-item"><div class="q-num">04</div><p><strong>What does this mean for mathematicians using commercial AI tools on unpublished work?</strong> Tao's broader worry — that this discourages sharing early ideas — is the part of the story likely to outlast this specific dispute.</p></div>
       <div class="q-item"><div class="q-num">05</div><p><strong>Who, if anyone, could receive a Clay prize?</strong> Clay requires a qualifying publication, a two-year wait, and general acceptance before it considers a proposed solution; OpenAI says it does not intend to claim the prize.</p></div>
       <div class="q-item"><div class="q-num">06</div><p><strong>What exactly has Lean verified?</strong> A Lean checker can verify the supplied formalization. Mathematicians still need to assess the theorem statement, modeling assumptions, translation into Lean, and the result's significance.</p></div>
+      <div class="q-item"><div class="q-num">07</div><p><strong>Does this solve "the" Millennium Problem as most people picture it?</strong> Not fully. Clay's official statement has four options; OpenAI's proof covers only the forced case (C and D). The unforced case (A and B) — which many mathematicians consider the deeper question — remains completely open.</p></div>
     </div>
 
     <div class="update-note">
-      <strong>This page is designed to be kept current.</strong> Add every update to the structured timeline data with an ISO date, an actor/category, and one or more direct sources. Update the timestamp above only after checking each new claim against its linked source; avoid adding unsourced social-media summaries as facts.
+      <strong>About this page.</strong> This is a running record, not a finished story — it's updated as new statements, documents, and reactions become public, and every claim links to its source rather than being asserted outright. Where the two sides disagree, both accounts are shown rather than one being treated as settled fact.
       <ul class="changelog">
-        <li class="mono">Sep 9 — Added source-aware timeline entries, neutral claim wording, Clay-prize criteria, an explicit Lean-verification question, and source-maintenance guidance.</li>
-        <li class="mono">Sep 9 — Replaced the sparse vortex sculpture with a layered, animated streamline field that shows inward circulation, core contraction, and axial stretching.</li>
+        <li class="mono">Sep 11 — Clarified that OpenAI's proof covers only the "forced" case (Clay statements C/D), not the unforced case (A/B) many mathematicians see as the harder question. Added Clay Institute and Fefferman's cautious public responses, Tao's Sept 7 commentary, OpenAI's confirmed Sept 1 start date, Buckmaster's claim that specific information was passed to OpenAI, and the Sept 5 date OpenAI cites for its internal result.</li>
+        <li class="mono">Sep 9 — Added direct sourcing to every timeline entry, the Clay Institute's prize criteria, and a question on what Lean verification does and doesn't establish.</li>
       </ul>
     </div>
   </div>
@@ -525,15 +540,17 @@
 // disputed: true adds an amber "disputed" flag to that entry
 // ---------------------------------------------------------------
 const TRACKER = {
-  updatedAt: "2026-09-09T09:00:00+05:30",
-  displayUpdatedAt: "Sep 9, 2026 · 9:00 AM IST"
+  updatedAt: "2026-09-11T12:00:00+05:30",
+  displayUpdatedAt: "Sep 11, 2026 · 12:00 PM IST"
 };
 
 const SOURCES = {
   openai: { label: "OpenAI announcement", url: "https://openai.com/index/navier-stokes-solution/" },
   buckmaster: { label: "Buckmaster statement", url: "https://cims.nyu.edu/~tristanb/statement.pdf" },
   bubeck: { label: "Bubeck public response", url: "https://x.com/SebastienBubeck" },
-  tao: { label: "Tao public commentary", url: "https://mathstodon.xyz/@tao/117233528517340774" }
+  tao: { label: "Tao public commentary", url: "https://mathstodon.xyz/@tao/117233528517340774" },
+  nature: { label: "Nature coverage", url: "https://www.nature.com/articles/d41586-026-02842-5" },
+  clay: { label: "Clay Mathematics Institute — prize rules", url: "https://www.claymath.org/millennium-problems/rules/" }
 };
 
 const TIMELINE = [
@@ -548,12 +565,22 @@ const TIMELINE = [
   },
   {
     date: "2026-08-28",
-    displayDate: "Aug 28–Sep 1, 2026",
+    displayDate: "Aug 28, 2026",
     actor: "openai",
     tag: "OpenAI escalates",
-    title: "OpenAI redirects major compute to the problem",
-    desc: "OpenAI says training for an internal model began on August 28 and its multi-problem evaluation effort began after it heard rumors on September 1. The two dates describe different stages, rather than a settled single start date.",
+    title: "OpenAI begins training its internal model",
+    desc: "OpenAI's own account now draws a clear line between two stages: training for an unreleased, more-capable-than-GPT-6-Astra internal model began August 28. Its dedicated push specifically on Navier–Stokes came later, after hearing a rumor.",
     sources: [SOURCES.openai]
+  },
+  {
+    date: "2026-09-01",
+    displayDate: "Sep 1, 2026",
+    actor: "openai",
+    tag: "OpenAI escalates",
+    title: "The dedicated Navier–Stokes push begins",
+    desc: "OpenAI says this effort started after \u201chearing a rumor\u201d about progress on the problem, which it later learned referred to Buckmaster and Alpöge. Buckmaster has said Alpöge separately received \u201ctips\u201d that information about their progress had specifically been passed to OpenAI \u2014 a firmer claim than OpenAI's general account of a rumor.",
+    disputed: true,
+    sources: [SOURCES.openai, SOURCES.buckmaster]
   },
   {
     date: "2026-09-03",
@@ -565,14 +592,32 @@ const TIMELINE = [
     sources: [SOURCES.buckmaster]
   },
   {
+    date: "2026-09-05",
+    displayDate: "Sep 5, 2026",
+    actor: "openai",
+    tag: "Internal result",
+    title: "OpenAI's agent swarm reaches a resolution",
+    desc: "OpenAI says its coordinated agents \u201carrived at their resolution\u201d on this date, about 88 hours after the first agents were launched \u2014 before any public statement from either side.",
+    sources: [SOURCES.openai]
+  },
+  {
     date: "2026-09-06",
     displayDate: "Sep 6, 2026",
     actor: "openai",
     tag: "Disputed calls",
     title: "Two calls raise the credit dispute",
-    desc: "Buckmaster says Bubeck described an internal forced-Navier–Stokes proof, urged him to exclude Alpöge from potential authorship, and made a career-related remark. OpenAI disputes this characterization; its announcement says Lean verification was completed on September 6.",
+    desc: "Buckmaster says Bubeck described an internal ~100-page forced-Navier–Stokes proof, urged him to exclude Alpöge from potential authorship, and made a career-related remark. Buckmaster also says OpenAI initially told him \u201cthere was little human intervention,\u201d but that explanation seemed inconsistent as he pressed for details. OpenAI disputes his characterization; its announcement says Lean verification was completed on September 6.",
     disputed: true,
     sources: [SOURCES.buckmaster, SOURCES.openai, SOURCES.bubeck]
+  },
+  {
+    date: "2026-09-07T09:00:00-07:00",
+    displayDate: "Sep 7, 2026 (daytime)",
+    actor: "community",
+    tag: "Reaction",
+    title: "Terence Tao weighs in",
+    desc: "In a blog post, Tao describes Buckmaster and Alpöge's work as a breakthrough across three simplified models \u2014 IPM, 2D Boussinesq, and 3D Euler \u2014 while noting they had not themselves reached blow-up for Navier\u2013Stokes proper. He separately raises concern that rumor-triggered, compute-heavy races may discourage researchers from sharing early directions.",
+    sources: [SOURCES.tao]
   },
   {
     date: "2026-09-07T23:58:00-04:00",
@@ -611,13 +656,13 @@ const TIMELINE = [
     sources: [SOURCES.openai]
   },
   {
-    date: "2026-09-08",
-    displayDate: "Sep 8, 2026",
+    date: "2026-09-10",
+    displayDate: "Sep 9\u201310, 2026",
     actor: "community",
-    tag: "Reaction",
-    title: "Terrence Tao weighs in",
-    desc: "Tao describes Buckmaster and Alpöge's work as a remarkable achievement and raises concern that rumor-triggered, compute-heavy races may discourage researchers from sharing early directions.",
-    sources: [SOURCES.tao]
+    tag: "Institutional response",
+    title: "Clay Institute and Fefferman respond cautiously",
+    desc: "Clay Mathematics Institute president Martin Bridson calls it \u201ccertainly an exciting day,\u201d without endorsing the result. Charles Fefferman, who wrote Clay's official problem statement, tells El Pa\u00eds the construction appears to match the problem as formulated but still needs a conventional mathematical rewrite and detailed review by several experts. Clay's page continues to list Navier\u2013Stokes as unsolved.",
+    sources: [SOURCES.nature, SOURCES.clay]
   }
 ];
 
